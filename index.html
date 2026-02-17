@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Presentation: AI Chips vs GPUs</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap');
+        
+        :root {
+            --primary: #2563eb;
+            --secondary: #64748b;
+            --accent: #10b981;
+            --bg: #ffffff;
+        }
+
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: var(--bg);
+            overflow: hidden; 
+        }
+
+        .slide-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .slide {
+            height: 100vh;
+            min-height: 100vh;
+            width: 100%;
+            padding: 4rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            height: 400px;
+            margin: auto;
+        }
+
+        .nav-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .nav-dot.active {
+            background: var(--primary);
+            transform: scale(1.3);
+        }
+
+        .presenter-notes {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 380px;
+            background: #1e293b;
+            color: #f1f5f9;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2);
+            z-index: 100;
+            display: none;
+            font-size: 0.9rem;
+            border-left: 4px solid var(--primary);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .ref-link { color: var(--primary); text-decoration: underline; font-size: 0.8rem; }
+
+        .ai-loading {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body class="bg-white text-slate-900">
+
+    <!-- Slide Navigation Dots -->
+    <div class="fixed right-8 top-1/2 -translate-y-1/2 flex flex-col space-y-4 z-50">
+        <div class="nav-dot active" onclick="goToSlide(0)" title="Title"></div>
+        <div class="nav-dot" onclick="goToSlide(1)" title="Definitions"></div>
+        <div class="nav-dot" onclick="goToSlide(2)" title="Architecture"></div>
+        <div class="nav-dot" onclick="goToSlide(3)" title="Efficiency Data"></div>
+        <div class="nav-dot" onclick="goToSlide(4)" title="The Lottery"></div>
+        <div class="nav-dot" onclick="goToSlide(5)" title="Conclusion"></div>
+        <div class="nav-dot" onclick="goToSlide(6)" title="References"></div>
+    </div>
+
+    <!-- Top UI -->
+    <div class="fixed top-6 left-8 z-50 flex items-center space-x-4">
+        <div class="bg-blue-600 text-white px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider">Research Presentation</div>
+        <button onclick="togglePresenterMode()" class="text-xs bg-slate-100 hover:bg-slate-200 border border-slate-200 px-3 py-1 rounded-md transition-colors">Toggle Presenter Notes (H)</button>
+    </div>
+
+    <!-- Presentation Container -->
+    <div id="slideStack" class="slide-container">
+        
+        <!-- Slide 1: Title -->
+        <section class="slide bg-slate-50">
+            <div class="max-w-4xl mx-auto text-center">
+                <h1 class="text-6xl font-extrabold text-slate-900 mb-6 leading-tight">AI Chips (ASICs) vs. GPUs</h1>
+                <p class="text-2xl text-blue-600 font-medium mb-12">Comparative Analysis in High-Performance Computing</p>
+                <div class="h-1 w-24 bg-blue-600 mx-auto mb-12"></div>
+                <p class="text-slate-500 uppercase tracking-widest font-bold">Bachelor Year 1 | Final Exam</p>
+            </div>
+        </section>
+
+        <!-- Slide 2: Definitions -->
+        <section class="slide">
+            <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h2 class="text-4xl font-bold mb-8">What are we comparing?</h2>
+                    <div class="space-y-6">
+                        <div class="p-6 bg-blue-50 rounded-2xl border border-blue-100">
+                            <h3 class="font-bold text-blue-900 text-xl mb-2">GPU (Graphics Processing Unit)</h3>
+                            <p class="text-slate-600">The "Generalist". Designed for graphics but adapted for parallel math. High flexibility, medium efficiency.</p>
+                        </div>
+                        <div class="p-6 bg-emerald-50 rounded-2xl border border-emerald-100">
+                            <h3 class="font-bold text-emerald-900 text-xl mb-2">ASIC (Application-Specific IC)</h3>
+                            <p class="text-slate-600">The "Specialist". Custom hardware for one task (e.g. Google TPU). Zero flexibility, maximum efficiency.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-slate-100 h-96 rounded-3xl flex flex-col items-center justify-center p-8 text-center">
+                    <div class="text-5xl mb-4">🏎️ vs 🚜</div>
+                    <p class="font-medium text-slate-700 italic">"ASICs are like Formula 1 cars: the fastest in the world on a track, but they can't go over a speed bump."</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 3: Architecture -->
+        <section class="slide bg-slate-50">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-4xl font-bold mb-12 text-center">The Architecture Gap</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+                        <h3 class="font-bold text-slate-800 mb-4 flex items-center">
+                            <span class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mr-3 text-sm">1</span>
+                            GPU Architecture
+                        </h3>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            Relies on thousands of SIMD (Single Instruction, Multiple Data) cores. Great at parallel math but heavy on "Control Logic" and memory fetch cycles.
+                        </p>
+                    </div>
+                    <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+                        <h3 class="font-bold text-slate-800 mb-4 flex items-center">
+                            <span class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mr-3 text-sm">2</span>
+                            ASIC (Systolic Array)
+                        </h3>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            Data flows through cells like blood in a heart. Reduces memory access by passing results directly to the next neighbor. Pure math, no fluff.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 4: Efficiency Data -->
+        <section class="slide">
+            <div class="max-w-5xl mx-auto text-center">
+                <h2 class="text-4xl font-bold mb-4">The Efficiency Win</h2>
+                <p class="text-slate-500 mb-12">Performance per Watt (Logarithmic Scale)</p>
+                <div class="chart-container">
+                    <canvas id="efficiencyChart"></canvas>
+                </div>
+                <div class="mt-12 text-sm text-slate-400">
+                    Source: Jouppi et al. (2017) - "In-Datacenter Performance Analysis of a TPU"
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 5: The Hardware Lottery -->
+        <section class="slide bg-slate-900 text-white">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-4xl font-bold mb-8 text-blue-400">The "Hardware Lottery"</h2>
+                <p class="text-xl text-slate-300 mb-12 leading-relaxed">
+                    Research by Sara Hooker (2021) suggests that AI breakthroughs are often decided by what hardware is available, not just what idea is better.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                    <div class="border-l-4 border-blue-500 pl-6">
+                        <h3 class="font-bold text-xl mb-2">GPU Path</h3>
+                        <p class="text-slate-400 text-sm italic">"I have a new idea for a neural network. I can test it immediately because my GPU is programmable."</p>
+                        <p class="mt-4 text-emerald-400 font-bold">Winner: Innovation</p>
+                    </div>
+                    <div class="border-l-4 border-emerald-500 pl-6">
+                        <h3 class="font-bold text-xl mb-2">ASIC Path</h3>
+                        <p class="text-slate-400 text-sm italic">"I have a specific model I need to run for 10 billion users. I will build a chip just for this."</p>
+                        <p class="mt-4 text-emerald-400 font-bold">Winner: Scale</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 6: Conclusion -->
+        <section class="slide">
+            <div class="max-w-4xl mx-auto text-center">
+                <h2 class="text-5xl font-bold mb-16">Key Takeaways</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+                    <div class="p-6 border border-slate-100 rounded-xl">
+                        <div class="text-3xl mb-4">🛠️</div>
+                        <h4 class="font-bold mb-2">GPU</h4>
+                        <p class="text-sm text-slate-500">Essential for R&D, training new models, and academic research.</p>
+                    </div>
+                    <div class="p-6 border border-slate-100 rounded-xl">
+                        <div class="text-3xl mb-4">⚡</div>
+                        <h4 class="font-bold mb-2">ASIC</h4>
+                        <p class="text-sm text-slate-500">Necessary for cost-effective inference at massive scale (Google/Meta).</p>
+                    </div>
+                    <div class="p-6 border border-slate-100 rounded-xl">
+                        <div class="text-3xl mb-4">🌎</div>
+                        <h4 class="font-bold mb-2">Green AI</h4>
+                        <p class="text-sm text-slate-500">Efficiency matters for the environment as AI data centers grow.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 7: References -->
+        <section class="slide bg-slate-50">
+            <div class="max-w-4xl mx-auto">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-3xl font-bold">Academic Bibliography</h2>
+                    <button onclick="aiExpandReferences()" class="bg-blue-600 text-white px-4 py-2 rounded-full text-xs font-bold hover:bg-blue-700 transition flex items-center space-x-2 shadow-lg">
+                        <span>✨ Research Insights</span>
+                    </button>
+                </div>
+                <div id="aiReferenceInsight" class="hidden mb-6 p-4 bg-blue-50 border border-blue-100 rounded-xl text-xs text-blue-800 leading-relaxed shadow-sm">
+                    <!-- AI Insight appears here -->
+                </div>
+                <ul id="referenceList" class="space-y-4">
+                    <li class="bg-white p-4 rounded-lg shadow-sm text-sm" data-paper="Jouppi 2017">
+                        <strong>Jouppi, N. P., et al. (2017).</strong> In-Datacenter Performance Analysis of a Tensor Processing Unit. <em>ACM SIGARCH Computer Architecture News</em>. <br>
+                        <a href="https://doi.org/10.1145/3079856.3080246" class="ref-link">doi.org/10.1145/3079856.3080246</a>
+                    </li>
+                    <li class="bg-white p-4 rounded-lg shadow-sm text-sm" data-paper="Hooker 2021">
+                        <strong>Hooker, S. (2021).</strong> The Hardware Lottery. <em>Communications of the ACM</em>. <br>
+                        <a href="https://doi.org/10.1145/3467017" class="ref-link">doi.org/10.1145/3467017</a>
+                    </li>
+                    <li class="bg-white p-4 rounded-lg shadow-sm text-sm" data-paper="Sze 2017">
+                        <strong>Sze, V., et al. (2017).</strong> Efficient Processing of Deep Neural Networks: A Tutorial and Survey. <em>Proceedings of the IEEE</em>. <br>
+                        <a href="https://doi.org/10.1109/JPROC.2017.2761740" class="ref-link">doi.org/10.1109/JPROC.2017.2761740</a>
+                    </li>
+                    <li class="bg-white p-4 rounded-lg shadow-sm text-sm" data-paper="Nurvitadhi 2016">
+                        <strong>Nurvitadhi, E., et al. (2016).</strong> Accelerating Binarized Neural Networks: Comparison of FPGA, CPU, GPU, and ASIC. <em>FPT</em>. <br>
+                        <a href="https://doi.org/10.1109/FPT.2016.7929194" class="ref-link">doi.org/10.1109/FPT.2016.7929194</a>
+                    </li>
+                    <li class="bg-white p-4 rounded-lg shadow-sm text-sm" data-paper="Reuther 2020">
+                        <strong>Reuther, A., et al. (2020).</strong> Survey of Machine Learning Accelerators. <em>IEEE HPEC</em>. <br>
+                        <a href="https://doi.org/10.1109/HPEC43674.2020.9286149" class="ref-link">doi.org/10.1109/HPEC43674.2020.9286149</a>
+                    </li>
+                    <li class="bg-white p-4 rounded-lg shadow-sm text-sm" data-paper="Chen 2016">
+                        <strong>Chen, Y. H., et al. (2016).</strong> Eyeriss: An Energy-Efficient Reconfigurable Accelerator for Deep Convolutional Neural Networks. <em>IEEE JSSC</em>. <br>
+                        <a href="https://doi.org/10.1109/JSSC.2016.2616357" class="ref-link">doi.org/10.1109/JSSC.2016.2616357</a>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Presenter Notes Overlay -->
+    <div id="presenterNotes" class="presenter-notes">
+        <div class="flex justify-between items-center border-b border-slate-700 pb-2 mb-3">
+            <h4 class="font-bold text-blue-400">Speaker Script</h4>
+            <button onclick="aiGenerateQA()" class="text-[10px] bg-blue-900/50 hover:bg-blue-800 border border-blue-500/30 px-2 py-1 rounded transition">✨ Q&A Trainer</button>
+        </div>
+        <p id="noteContent" class="leading-relaxed mb-4">
+            Welcome the audience. Introduce the topic of AI hardware.
+        </p>
+        <div id="qaTrainerArea" class="hidden mt-4 pt-4 border-t border-slate-700">
+            <div class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-2">Practice Questions</div>
+            <div id="qaContent" class="text-xs text-slate-300 italic"></div>
+        </div>
+        <div class="mt-4 flex justify-between items-center text-[10px] text-slate-500">
+            <span>Arrow keys to navigate</span>
+            <span id="slideCounter">Slide 1/7</span>
+        </div>
+    </div>
+
+    <script>
+        // --- GEMINI API CONFIG ---
+        const apiKey = ""; // Environment provides this
+
+        async function callGemini(prompt, systemInstruction = "") {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                systemInstruction: systemInstruction ? { parts: [{ text: systemInstruction }] } : undefined
+            };
+
+            let delay = 1000;
+            for (let i = 0; i < 5; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (response.ok) {
+                        const result = await response.json();
+                        return result.candidates?.[0]?.content?.parts?.[0]?.text;
+                    }
+                } catch (e) {}
+                await new Promise(r => setTimeout(r, delay));
+                delay *= 2;
+            }
+            return "Unable to connect to AI. Please check your network.";
+        }
+
+        // --- GEMINI FEATURES ---
+        async function aiGenerateQA() {
+            const qaArea = document.getElementById('qaTrainerArea');
+            const qaContent = document.getElementById('qaContent');
+            qaArea.classList.remove('hidden');
+            qaContent.innerHTML = "<span class='ai-loading'>✨ Predicting professor questions...</span>";
+            
+            const slideText = document.querySelector(`.slide:nth-child(${currentSlide + 1})`).innerText;
+            const prompt = `Based on this slide content from a Bachelor 1st year presentation: "${slideText}", what are 2 challenging questions a professor might ask? Provide short, smart answers for the student to practice.`;
+            const systemPrompt = "You are an expert AI Hardware professor. Be encouraging but rigorous.";
+
+            const result = await callGemini(prompt, systemPrompt);
+            qaContent.innerText = result;
+        }
+
+        async function aiExpandReferences() {
+            const insightArea = document.getElementById('aiReferenceInsight');
+            insightArea.classList.remove('hidden');
+            insightArea.innerHTML = "<span class='ai-loading'>✨ Analyzing research impact...</span>";
+            
+            const prompt = "Briefly explain how the 6 research papers listed (Jouppi, Hooker, Sze, Nurvitadhi, Reuther, Chen) collectively tell a story about the evolution of AI hardware from general to specialized. How can a student use these to defend the argument that ASICs are the future of green AI?";
+            
+            const result = await callGemini(prompt, "You are a research librarian specializing in high-performance computing.");
+            insightArea.innerText = result;
+        }
+
+        // --- DATA: SPEAKER SCRIPT ---
+        const scripts = [
+            "Start by welcoming the audience. State that as AI becomes part of our daily lives, the hardware running it—the 'brain' of the machine—becomes a critical field of study for computer scientists. Today we compare GPUs and ASICs.",
+            "Explain that we have two main tools. The GPU is a generalist, like a Swiss Army Knife. It can do many things. The ASIC is a specialist, like a scalpel, designed for one specific AI math operation and nothing else.",
+            "Technical part: Explain that GPUs have thousands of cores but waste energy on control logic. ASICs use 'Systolic Arrays' where data flows through the chip without constantly going back to the memory, which is the main bottleneck in computing.",
+            "Visual data: Reference the Jouppi (2017) study. Note that while GPUs are fast, ASICs like the TPU are 15x to 30x more efficient per watt. This is vital for sustainability and cost in large data centers.",
+            "The Hardware Lottery: This is a deep concept. Research by Sara Hooker shows that our current AI models (like Transformers) succeeded because they worked well on the GPUs we already had. Specialization (ASICs) can sometimes hinder new ideas.",
+            "Summarize: GPUs are for the lab and the researcher (Innovation). ASICs are for the industrial scale (Implementation). The future is a mix of both architectures working together.",
+            "Final slide: These are the 6 academic sources backing this research. Mention that they range from tutorial surveys to original performance benchmarks from Google and IEEE."
+        ];
+
+        // --- STATE ---
+        let currentSlide = 0;
+        const totalSlides = 7;
+
+        // --- NAVIGATION LOGIC ---
+        function goToSlide(n) {
+            currentSlide = n;
+            const stack = document.getElementById('slideStack');
+            stack.style.transform = `translateY(-${n * 100}vh)`;
+            
+            // Hide AI areas on move
+            document.getElementById('qaTrainerArea').classList.add('hidden');
+
+            const dots = document.querySelectorAll('.nav-dot');
+            dots.forEach((dot, idx) => {
+                if(idx === n) dot.classList.add('active');
+                else dot.classList.remove('active');
+            });
+
+            document.getElementById('noteContent').innerText = scripts[n];
+            document.getElementById('slideCounter').innerText = `Slide ${n + 1}/${totalSlides}`;
+        }
+
+        function togglePresenterMode() {
+            const notes = document.getElementById('presenterNotes');
+            notes.style.display = (notes.style.display === 'block') ? 'none' : 'block';
+        }
+
+        // --- KEYBOARD NAV ---
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowDown' || e.key === ' ') {
+                if (currentSlide < totalSlides - 1) goToSlide(currentSlide + 1);
+            }
+            if (e.key === 'ArrowUp') {
+                if (currentSlide > 0) goToSlide(currentSlide - 1);
+            }
+            if (e.key.toLowerCase() === 'h') {
+                togglePresenterMode();
+            }
+        });
+
+        // --- CHART INIT ---
+        function initCharts() {
+            const ctx = document.getElementById('efficiencyChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['CPU (Base)', 'GPU (NVIDIA K80)', 'ASIC (Google TPU v1)'],
+                    datasets: [{
+                        label: 'Relative Perf/Watt',
+                        data: [1, 2.9, 83], 
+                        backgroundColor: ['#e2e8f0', '#3b82f6', '#10b981'],
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    scales: {
+                        x: { type: 'logarithmic', title: { display: true, text: 'Energy Efficiency Factor' } }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        window.onload = function() {
+            initCharts();
+            goToSlide(0);
+        };
+    </script>
+</body>
+</html>
